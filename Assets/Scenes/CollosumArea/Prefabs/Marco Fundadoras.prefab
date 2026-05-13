@@ -157,15 +157,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1897108578803551515, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_fontSize
-      value: 40
+      value: 34.4
       objectReference: {fileID: 0}
     - target: {fileID: 1897108578803551515, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_fontAsset
       value: 
-      objectReference: {fileID: 11400000, guid: a7e9be59ad60db442b89dff19e616f67, type: 2}
+      objectReference: {fileID: 11400000, guid: ecc2f68ee05a1094f9f4df7a4b1081ef, type: 2}
     - target: {fileID: 1897108578803551515, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_fontStyle
-      value: 3
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1897108578803551515, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_fontSizeBase
@@ -178,7 +178,7 @@ PrefabInstance:
     - target: {fileID: 1897108578803551515, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_sharedMaterial
       value: 
-      objectReference: {fileID: 6315014735745959253, guid: a7e9be59ad60db442b89dff19e616f67, type: 2}
+      objectReference: {fileID: -1953098209785421717, guid: ecc2f68ee05a1094f9f4df7a4b1081ef, type: 2}
     - target: {fileID: 1897108578803551515, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_enableAutoSizing
       value: 1
@@ -233,7 +233,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6477512983158778462, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_Value
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7035808934497996602, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_IsActive
@@ -396,8 +396,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: Texto
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: a7e9be59ad60db442b89dff19e616f67, type: 2}
-  m_sharedMaterial: {fileID: 6315014735745959253, guid: a7e9be59ad60db442b89dff19e616f67, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: ecc2f68ee05a1094f9f4df7a4b1081ef, type: 2}
+  m_sharedMaterial: {fileID: -1953098209785421717, guid: ecc2f68ee05a1094f9f4df7a4b1081ef, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
