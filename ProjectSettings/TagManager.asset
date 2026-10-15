@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 3
   tags:
   - Anchor
+  - Recoger
   layers:
   - Default
   - TransparentFX
