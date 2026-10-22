@@ -5,14 +5,16 @@ public class Drone : MonoBehaviour
 {
     public Transform[] collectibles;   // cubitos
     public Transform[] depoPoints;     // collectibles[i] va a depoPoints[i]
-    public Transform holdPoint;        // solo se usa como padre del cubo cargado
+    public Transform holdPoint;        // padre del cubo cargado
     public float speed = 3f;
     public float descendSpeed = 1.5f;
-    public float arriveTolerance = 0.2f;   // margen para considerar que está "encima"
+    public float arriveTolerance = 0.2f;
+
+    public string LastError = "";      // vacío = el paso salió bien
 
     int current;
     bool holding;
-    float hoverY;                      // altura de vuelo = altura inicial del dron
+    float hoverY;
     Vector3 startPos;
     Quaternion startRot;
     Vector3[] cubeStart;
@@ -31,50 +33,52 @@ public class Drone : MonoBehaviour
 
     public IEnumerator Do(CommandBlock.Cmd cmd)
     {
+        LastError = "";
         if (Finished) yield break;
 
         switch (cmd)
         {
             case CommandBlock.Cmd.IrACubo:
-                if (!holding) yield return GoTo(collectibles[current].position);
+                if (holding) { LastError = "ya llevo un cubo."; break; }
+                yield return GoTo(collectibles[current].position);
                 break;
 
             case CommandBlock.Cmd.Recoger:
-                if (!holding && FlatDist(collectibles[current].position) < arriveTolerance)
-                    yield return PickUp();
-                else
-                    yield return new WaitForSeconds(0.4f);
+                if (holding) { LastError = "ya llevo un cubo."; break; }
+                if (FlatDist(collectibles[current].position) >= arriveTolerance)
+                { LastError = "no hay ningún cubo cerca."; break; }
+                yield return PickUp();
                 break;
 
             case CommandBlock.Cmd.IrADepo:
-                if (holding) yield return GoTo(depoPoints[current].position);
+                if (!holding) { LastError = "no llevo ningún cubo."; break; }
+                yield return GoTo(depoPoints[current].position);
                 break;
 
             case CommandBlock.Cmd.Soltar:
-                if (holding && FlatDist(depoPoints[current].position) < arriveTolerance)
-                    yield return Release();
-                else
-                    yield return new WaitForSeconds(0.4f);
+                if (!holding) { LastError = "no llevo nada que soltar."; break; }
+                if (FlatDist(depoPoints[current].position) >= arriveTolerance)
+                { LastError = "no estoy sobre mi zona de entrega."; break; }
+                yield return Release();
                 break;
         }
     }
 
-    // ---------- Acciones (aquí luego pones tus animaciones) ----------
+    // Acciones (aquí luego pones tus animaciones)
 
     IEnumerator PickUp()
     {
         Transform cube = collectibles[current];
 
-        // bajar hasta que la base del dron toque la parte de arriba del cubo
         float dy = Top(cube) - Bottom(transform);
         yield return MoveY(transform.position.y + dy);
 
-        // >>> aquí iría la animación de agarrar <<<
-        cube.SetParent(holdPoint);       // conserva su posición actual: queda pegado a la base
+        // >>> animación de agarrar <<<
+        cube.SetParent(holdPoint);
         holding = true;
         yield return new WaitForSeconds(0.2f);
 
-        yield return MoveY(hoverY);      // subir
+        yield return MoveY(hoverY);
     }
 
     IEnumerator Release()
@@ -82,21 +86,20 @@ public class Drone : MonoBehaviour
         Transform cube = collectibles[current];
         Transform depo = depoPoints[current];
 
-        // bajar hasta que la base del cubo toque la parte de arriba del depo
         float dy = Top(depo) - Bottom(cube);
         yield return MoveY(transform.position.y + dy);
 
-        // >>> aquí iría la animación de soltar <<<
+        // animación de soltar
         cube.SetParent(null);
         cube.position = new Vector3(depo.position.x, cube.position.y, depo.position.z);
         holding = false;
         current++;
         yield return new WaitForSeconds(0.2f);
 
-        yield return MoveY(hoverY);      // subir
+        yield return MoveY(hoverY);
     }
 
-    // ---------- Movimiento ----------
+    // Movimiento 
 
     IEnumerator GoTo(Vector3 target)
     {
@@ -120,7 +123,6 @@ public class Drone : MonoBehaviour
         }
     }
 
-    // ---------- Utilidades ----------
 
     float FlatDist(Vector3 p)
     {
@@ -137,6 +139,7 @@ public class Drone : MonoBehaviour
     static float Top(Transform t)    => GetBounds(t).max.y;
     static float Bottom(Transform t) => GetBounds(t).min.y;
 
+    // Utilidades 
     public void ResetDrone()
     {
         StopAllCoroutines();
@@ -148,5 +151,6 @@ public class Drone : MonoBehaviour
         }
         current = 0;
         holding = false;
+        LastError = "";
     }
 }

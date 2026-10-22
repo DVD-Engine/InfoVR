@@ -8,45 +8,30 @@ public class ProgramManager : MonoBehaviour
 {
     public List<XRSocketInteractor> slots;   // en orden, izquierda a derecha
     public Drone drone;
-    public TMP_Text statusText;              // opcional
+    public TMP_Text statusText;
     public int maxIteraciones = 10;          // seguridad contra bucles infinitos
-    public Color activeColor = Color.yellow;
 
     Coroutine running;
-    Renderer[] slotRenderers;
-    Color[] slotColors;
 
-    void Awake()
-    {
-        // Para resaltar el socket activo (usa el Renderer del socket o de sus hijos, si tiene)
-        slotRenderers = new Renderer[slots.Count];
-        slotColors = new Color[slots.Count];
-        for (int i = 0; i < slots.Count; i++)
-        {
-            slotRenderers[i] = slots[i].GetComponentInChildren<Renderer>();
-            if (slotRenderers[i] != null) slotColors[i] = slotRenderers[i].material.color;
-        }
-    }
-
-    // Conecta estos dos a tus botones (Select Entered)
+    // Botón EJECUTAR
     public void Run()
     {
         if (running != null) return;
         running = StartCoroutine(Execute());
     }
 
+    // Botón LIMPIAR (junto con BlockResetter.ResetBlocks)
     public void ResetAll()
     {
         if (running != null) StopCoroutine(running);
         running = null;
         drone.ResetDrone();
-        Highlight(-1);
         SetStatus("Arma tu programa y presiona EJECUTAR.");
     }
 
     IEnumerator Execute()
     {
-        // 1. Leer el programa: lista de (índice de socket, comando)
+        // 1. Leer el programa: (número de socket, comando)
         var program = new List<(int slot, CommandBlock.Cmd cmd)>();
         bool loop = false;
 
@@ -56,7 +41,7 @@ public class ProgramManager : MonoBehaviour
             var b = slots[i].interactablesSelected[0].transform.GetComponent<CommandBlock>();
             if (b == null) continue;
 
-            if (b.command == CommandBlock.Cmd.Repetir) { loop = true; break; } // lo de después se ignora
+            if (b.command == CommandBlock.Cmd.Repetir) { loop = true; break; }
             program.Add((i, b.command));
         }
 
@@ -70,27 +55,36 @@ public class ProgramManager : MonoBehaviour
         // 2. Ejecutar
         SetStatus("Ejecutando...");
         int iter = 0;
+        bool failed = false;
+
         do
         {
             foreach (var step in program)
             {
-                Highlight(step.slot);
                 yield return drone.Do(step.cmd);
+
+                if (drone.LastError != "")
+                {
+                    SetStatus("Falló el paso " + (step.slot + 1) + ": " + drone.LastError);
+                    failed = true;
+                    break;
+                }
             }
             iter++;
         }
-        while (loop && !drone.Finished && iter < maxIteraciones);
+        while (!failed && loop && !drone.Finished && iter < maxIteraciones);
 
-        Highlight(-1);
-        SetStatus(drone.Finished ? "¡Misión cumplida!" : "El programa terminó pero faltan cubos.");
+        if (!failed)
+        {
+            if (drone.Finished)
+                SetStatus("¡Misión cumplida!");
+            else if (!loop)
+                SetStatus("El programa terminó pero faltan cubos. ¿Cómo lo repites?");
+            else
+                SetStatus("Se alcanzó el límite de repeticiones y faltan cubos.");
+        }
+
         running = null;
-    }
-
-    void Highlight(int index)
-    {
-        for (int i = 0; i < slotRenderers.Length; i++)
-            if (slotRenderers[i] != null)
-                slotRenderers[i].material.color = (i == index) ? activeColor : slotColors[i];
     }
 
     void SetStatus(string msg)
